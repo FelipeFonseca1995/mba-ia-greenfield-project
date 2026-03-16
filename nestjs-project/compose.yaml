@@ -1,12 +1,14 @@
 services:
   nestjs-api:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile.dev
     ports:
       - 3000:3000
     volumes:
       - .:/home/node/app
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -24,5 +26,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 
