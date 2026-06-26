@@ -4,13 +4,6 @@ Projeto da disciplina **Desenvolvimento de Aplicações de IA** do MBA de Engenh
 
 Este é um projeto greenfield desenvolvido para demonstrar como construir uma aplicação do zero utilizando IA de forma adequada no processo de desenvolvimento.
 
----
-
-## Quadro Branco
-
-- [Quadro Branco](./whiteboard.png)
-
----
 
 ## 🎨 Design System (Figma)
 
