@@ -4,13 +4,13 @@ Projeto da disciplina **Desenvolvimento de Aplicações de IA** do MBA de Engenh
 
 Este é um projeto greenfield desenvolvido para demonstrar como construir uma aplicação do zero utilizando IA de forma adequada no processo de desenvolvimento.
 
-## Professor
+## Autor
 
-<a href="https://github.com/argentinaluiz">
-    <img src="https://avatars.githubusercontent.com/u/4926329?v=4?s=100" width="100px;" alt=""/>
+<a href="https://github.com/FelipeFonseca1995">
+    <img src="https://avatars.githubusercontent.com/FelipeFonseca1995" width="100px;" alt=""/>
     <br />
     <sub>
-        <b>Luiz Carlos</b>
+        <b>Felipe Fonseca</b>
     </sub>
 </a>
 
