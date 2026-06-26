@@ -34,6 +34,9 @@ docker compose exec nestjs-api npm run start:dev
 Services:
 - `nestjs-api` — NestJS API, port `3000`
 - `db` — PostgreSQL 17, port `5432`, database `streamtube`, user/password `streamtube`
+- `storage` — MinIO Object Storage, Web Console port `9001`, API port `9000` (bucket: `streamtube-videos`)
+- `redis` — Redis cache and message queue (BullMQ), port `6379`
+- `nestjs-worker` — NestJS Worker process (FFmpeg) consuming video processing jobs
 
 All verification and teardown commands run on the **host machine**:
 
@@ -159,3 +162,20 @@ NestJS with standard module structure. Source lives in `src/`, compiled output i
 ## REST Conventions
 
 This is a RESTful API. All endpoints must follow standard REST conventions — correct HTTP methods, proper status codes, plural resource nouns, and consistent URL structure. Details are enforced via rules on controller files.
+
+## Phase 03: Video Module and Processing Worker
+
+### Architecture & Components
+- **StorageService**: Integrates with MinIO/S3 using the `@aws-sdk/client-s3` library. Handles presigned URLs for direct multipart uploads and file downloads.
+- **VideosModule**: Manages the life cycle of videos in the database. When an upload completes, it publishes a job to the `video-processing` BullMQ queue.
+- **VideoProcessor**: A BullMQ worker that downloads the video file, extracts metadata (duration, width, height, codec) using `ffprobe`, extracts a thumbnail at 1s using `ffmpeg`, uploads the thumbnail to S3, and marks the video as `READY`.
+- **Worker Boot Mode**: The application can boot in "Worker Mode" (skipping the HTTP server and only listening to queue jobs) by setting `WORKER_MODE=true` in the environment.
+
+### API Endpoints (`/videos`)
+- `POST /videos/upload/init` - Initialize video upload (creates draft video and returns uploadId, key, slug).
+- `POST /videos/upload/presign-parts` - Generate presigned URLs for upload parts.
+- `POST /videos/upload/complete` - Complete upload and queue processing.
+- `GET /videos/:slug` - Get video details/metadata.
+- `GET /videos/:slug/stream` - Redirects to a presigned GET URL for video streaming.
+- `GET /videos/:slug/download` - Redirects to a presigned GET URL with attachment content disposition for download.
+

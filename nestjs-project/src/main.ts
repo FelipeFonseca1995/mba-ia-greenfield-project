@@ -11,6 +11,11 @@ import { buildSwaggerDocument } from './swagger/swagger-document';
 import swaggerMetadata from './metadata.js';
 
 async function bootstrap() {
+  if (process.env.WORKER_MODE === 'true') {
+    const app = await NestFactory.createApplicationContext(AppModule);
+    console.log('Worker context initialized successfully.');
+    return;
+  }
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port') ?? 3000;

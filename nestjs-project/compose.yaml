@@ -12,6 +12,10 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+      redis:
+        condition: service_healthy
+      storage:
+        condition: service_healthy
 
   db:
     image: postgres:17
@@ -32,5 +36,68 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  storage:
+    image: minio/minio:RELEASE.2024-02-17T01-15-57Z
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/9000' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nestjs-worker:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/home/node/app
+    environment:
+      - WORKER_MODE=true
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=streamtube
+      - DB_PASSWORD=streamtube
+      - DB_NAME=streamtube
+      - JWT_SECRET=change-me-in-production
+      - JWT_REFRESH_SECRET=change-me-refresh-in-production
+      - JWT_ACCESS_EXPIRATION=15m
+      - JWT_REFRESH_EXPIRATION=7d
+      - CONFIRMATION_TOKEN_EXPIRATION_HOURS=1
+      - PASSWORD_RESET_TOKEN_EXPIRATION_HOURS=1
+      - MAIL_HOST=mailpit
+      - MAIL_PORT=1025
+      - STORAGE_ENDPOINT=http://storage:9000
+      - STORAGE_ACCESS_KEY=minioadmin
+      - STORAGE_SECRET_KEY=minioadmin
+      - STORAGE_BUCKET_VIDEOS=streamtube-videos
+      - STORAGE_FORCE_PATH_STYLE=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      storage:
+        condition: service_healthy
 
 
